@@ -16,6 +16,7 @@ gccVersion="master"
 binutilsVersion="master"
 expatVersion="2.2.7"
 gmpVersion="6.1.2"
+ncursesVersion="6.1"
 islVersion="0.21"
 libiconvVersion="1.16"
 mpcVersion="1.1.0"
@@ -42,6 +43,8 @@ expat="expat-${expatVersion}"
 expatArchive="${expat}.tar.bz2"
 gmp="gmp-${gmpVersion}"
 gmpArchive="${gmp}.tar.xz"
+ncurses="ncurses-${ncursesVersion}"
+ncursesArchive="ncurses-${ncursesVersion}.tar.gz"
 isl="isl-${islVersion}"
 islArchive="${isl}.tar.xz"
 libiconv="libiconv-${libiconvVersion}"
@@ -166,6 +169,44 @@ buildZlib() {
 		if [ "${keepBuildFolders}" = "n" ]; then
 			echo "${bold}---------- ${bannerPrefix}${zlib} remove build folder${normal}"
 			rm -rf ${buildFolder}/${zlib}
+		fi
+	fi
+	)
+}
+
+buildNcurses() {
+	(
+	local buildFolder="${1}"
+	local bannerPrefix="${2}"
+	local configureOptions="${3}"
+	local tagFileBase="${top}/${buildFolder}/ncurses"
+	echo "${bold}********** ${bannerPrefix}${ncurses}${normal}"
+	if [ ! -f "${tagFileBase}_built" ]; then
+		if [ -d "${buildFolder}/${ncurses}" ]; then
+			rm -rf "${buildFolder}/${ncurses}"
+		fi
+		mkdir -p ${buildFolder}/${ncurses}
+		cd ${buildFolder}/${ncurses}
+		export CPPFLAGS="${BASE_CPPFLAGS-} ${CPPFLAGS-}"
+		export LDFLAGS="${BASE_LDFLAGS-} ${LDFLAGS-}"
+		echo "${bold}---------- ${bannerPrefix}${ncurses} configure${normal}"
+		eval "${top}/${sources}/${ncurses}/configure \
+			${quietConfigureOptions} \
+			${configureOptions} \
+			--prefix=${top}/${buildFolder}/${prerequisites}/${ncurses} \
+			--enable-cxx \
+			--disable-stripping \
+			--disable-shared \
+			--disable-nls"
+		echo "${bold}---------- ${bannerPrefix}${ncurses} make${normal}"
+		make -j${nproc}
+		echo "${bold}---------- ${bannerPrefix}${ncurses} make install${normal}"
+		make install
+		touch "${tagFileBase}_built"
+		cd ${top}
+		if [ "${keepBuildFolders}" = "n" ]; then
+			echo "${bold}---------- ${bannerPrefix}${ncurses} remove build folder${normal}"
+			rm -rf ${buildFolder}/${ncurses}
 		fi
 	fi
 	)
@@ -396,6 +437,7 @@ buildBinutils() {
 			--with-system-gdbinit=${top}/${installFolder}/${target}/lib/gdbinit \
 			--with-system-zlib \
 			--with-expat=yes \
+			--enable-tui \
 			--with-libexpat-prefix=${top}/${buildFolder}/${prerequisites}/${expat} \
 			--with-mpfr=yes \
 			--with-libmpfr-prefix=${top}/${buildFolder}/${prerequisites}/${mpfr} \
@@ -664,8 +706,8 @@ buildGdb() {
 		fi
 		mkdir -p ${buildFolder}/${gdb}
 		cd ${buildFolder}/${gdb}
-		export CPPFLAGS="-I${top}/${buildFolder}/${prerequisites}/${zlib}/include ${BASE_CPPFLAGS-} -march=haswell ${CPPFLAGS-}"
-		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
+		export CPPFLAGS="-I${top}/${buildFolder}/${prerequisites}/${zlib}/include -I${top}/${buildFolder}/${prerequisites}/${ncurses}/include ${BASE_CPPFLAGS-} -march=haswell ${CPPFLAGS-}"
+		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib -L${top}/${buildFolder}/${prerequisites}/${ncurses}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
 		echo "${bold}---------- ${bannerPrefix}${gdb} configure${normal}"
 		eval "${top}/${sources}/${gdb}/configure \
 			${quietConfigureOptions} \
@@ -766,6 +808,7 @@ else
 	find ${sources} -mindepth 1 -maxdepth 1 -type f \
 		! -name "${expatArchive}" \
 		! -name "${gmpArchive}" \
+		! -name "${ncursesArchive}" \
 		! -name "${islArchive}" \
 		! -name "${libiconvArchive}" \
 		! -name "${mpcArchive}" \
@@ -804,6 +847,7 @@ checkout() {
 download ${expatArchive} https://github.com/libexpat/libexpat/releases/download/$(echo "R_${expatVersion}" | sed 's/\./_/g')/${expatArchive}
 checkout ${gccVersion} git://gcc.gnu.org/git/gcc.git ${gcc}
 checkout ${binutilsVersion} git://sourceware.org/git/binutils-gdb.git ${binutils}
+download ${ncursesArchive} http://ftp.gnu.org/pub/gnu/ncurses/${ncursesArchive}
 download ${gmpArchive} http://ftp.gnu.org/gnu/gmp/${gmpArchive}
 download ${islArchive} http://isl.gforge.inria.fr/${islArchive}
 if [ "${enableWin32}" = "y" ] || [ "${enableWin64}" = "y" ]; then
@@ -830,6 +874,7 @@ extract() {
 		touch "${1}_extracted"
 	fi
 }
+extract ${ncursesArchive}
 extract ${expatArchive}
 extract ${gmpArchive}
 extract ${islArchive}
@@ -855,6 +900,8 @@ cd ${top}
 hostTriplet=$(${sources}/${newlib}/config.guess)
 
 buildZlib ${buildNative} "" "" ""
+
+buildNcurses ${buildNative} "" "--build=${hostTriplet} --host=${hostTriplet}"
 
 buildGmp ${buildNative} "" "--build=${hostTriplet} --host=${hostTriplet}"
 
@@ -1035,6 +1082,11 @@ buildMingw() {
 		"--build=${hostTriplet} --host=${triplet}"
 
 	buildExpat \
+		${buildFolder} \
+		${bannerPrefix} \
+		"--build=${hostTriplet} --host=${triplet}"
+
+	buildNcurses \
 		${buildFolder} \
 		${bannerPrefix} \
 		"--build=${hostTriplet} --host=${triplet}"

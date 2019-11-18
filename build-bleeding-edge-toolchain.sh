@@ -782,8 +782,8 @@ download() {
 
 checkout() {
 	pushd .
-#	git clone --depth=1 -b ${1} ${2} || (cd ${3} && git fetch origin ${1} && git checkout ${1})
-	git clone --depth=1 -b ${1} ${2} || (cd ${3} && git pull)
+#	git clone -q --depth=1 -b ${1} ${2} || (cd ${3} && git fetch origin ${1} && git checkout ${1})
+	git clone -q --depth=1 -b ${1} ${2} || (cd ${3} && git pull)
 	popd
 }
 

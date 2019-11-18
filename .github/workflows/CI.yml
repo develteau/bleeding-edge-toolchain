@@ -21,3 +21,12 @@ jobs:
       run: |
         mkdir build && cd build
         TERM=xterm-256color ../build-bleeding-edge-toolchain.sh --skip-documentation --enable-win64
+    - uses: actions/upload-artifact@v1
+      with:
+        name: native
+        path: installNative
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: win64
+        path: installWin64

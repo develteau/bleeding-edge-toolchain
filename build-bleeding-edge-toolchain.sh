@@ -788,8 +788,8 @@ checkout() {
 }
 
 download ${expatArchive} https://github.com/libexpat/libexpat/releases/download/$(echo "R_${expatVersion}" | sed 's/\./_/g')/${expatArchive}
-checkout master git://gcc.gnu.org/git/gcc.git ${gcc}
-checkout master git://sourceware.org/git/binutils-gdb.git ${binutils}
+checkout master https://github.com/gcc-mirror/gcc.git ${gcc}
+checkout master https://github.com/bminor/binutils-gdb.git ${binutils}
 download ${gmpArchive} http://ftp.gnu.org/gnu/gmp/${gmpArchive}
 download ${islArchive} http://isl.gforge.inria.fr/${islArchive}
 if [ "${enableWin32}" = "y" ] || [ "${enableWin64}" = "y" ]; then

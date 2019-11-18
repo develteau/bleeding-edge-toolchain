@@ -12,5 +12,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - run: |
+        pwd
         mkdir build && cd build
         ../bleeding-edge-toolchain/build-bleeding-edge-toolchain.sh --skip-documentation --enable-win64

@@ -12,10 +12,9 @@
 set -e
 set -u
 
-binutilsVersion="2.32"
+gccVersion="master"
+binutilsVersion="master"
 expatVersion="2.2.7"
-gccVersion="9.2.0"
-gdbVersion="8.3"
 gmpVersion="6.1.2"
 islVersion="0.21"
 libiconvVersion="1.16"
@@ -36,14 +35,11 @@ nanoLibraries="nanoLibraries"
 prerequisites="prerequisites"
 sources="sources"
 
-binutils="binutils-${binutilsVersion}"
-binutilsArchive="${binutils}.tar.xz"
+gcc="gcc"
+binutils="binutils-gdb"
+gdb="binutils-gdb"
 expat="expat-${expatVersion}"
 expatArchive="${expat}.tar.bz2"
-gcc="gcc-${gccVersion}"
-gccArchive="${gcc}.tar.xz"
-gdb="gdb-${gdbVersion}"
-gdbArchive="${gdb}.tar.xz"
 gmp="gmp-${gmpVersion}"
 gmpArchive="${gmp}.tar.xz"
 isl="isl-${islVersion}"
@@ -385,11 +381,20 @@ buildBinutils() {
 			--prefix=${top}/${installFolder} \
 			--docdir=${top}/${installFolder}/share/doc \
 			--disable-nls \
+			--disable-sim \
+			--disable-werror \
 			--enable-interwork \
 			--enable-multilib \
 			--enable-plugins \
-			--disable-gdb \
+			--with-lzma=no \
+			--with-guile=no \
+			--with-system-gdbinit=${top}/${installFolder}/${target}/lib/gdbinit \
 			--with-system-zlib \
+			--with-expat=yes \
+			--with-libexpat-prefix=${top}/${buildFolder}/${prerequisites}/${expat} \
+			--with-mpfr=yes \
+			--with-libmpfr-prefix=${top}/${buildFolder}/${prerequisites}/${mpfr} \
+			\"--with-gdb-datadir='\\\${prefix}'/${target}/share/gdb\" \
 			\"--with-pkgversion=${pkgversion}\""
 		echo "${bold}---------- ${bannerPrefix}${binutils} make${normal}"
 		make -j${nproc}
@@ -743,10 +748,8 @@ else
 		mkdir -p ${installWin64}
 	fi
 	mkdir -p ${sources}
-	find ${sources} -mindepth 1 -maxdepth 1 -type f ! -name "${binutilsArchive}" \
+	find ${sources} -mindepth 1 -maxdepth 1 -type f \
 		! -name "${expatArchive}" \
-		! -name "${gccArchive}" \
-		! -name "${gdbArchive}" \
 		! -name "${gmpArchive}" \
 		! -name "${islArchive}" \
 		! -name "${libiconvArchive}" \
@@ -776,14 +779,17 @@ download() {
 		touch "${1}_downloaded"
 	fi
 }
-download ${binutilsArchive} http://ftp.gnu.org/gnu/binutils/${binutilsArchive}
+
+checkout() {
+	pushd .
+#	git clone --depth=1 -b ${1} ${2} || (cd ${3} && git fetch origin ${1} && git checkout ${1})
+	git clone --depth=1 -b ${1} ${2} || (cd ${3} && git pull)
+	popd
+}
+
 download ${expatArchive} https://github.com/libexpat/libexpat/releases/download/$(echo "R_${expatVersion}" | sed 's/\./_/g')/${expatArchive}
-if [ ${gccVersion#*-} = ${gccVersion} ]; then
-	download ${gccArchive} http://ftp.gnu.org/gnu/gcc/${gcc}/${gccArchive}
-else
-	download ${gccArchive} https://gcc.gnu.org/pub/gcc/snapshots/${gccVersion}/${gccArchive}
-fi
-download ${gdbArchive} http://ftp.gnu.org/gnu/gdb/${gdbArchive}
+checkout master git://gcc.gnu.org/git/gcc.git ${gcc}
+checkout master git://sourceware.org/git/binutils-gdb.git ${binutils}
 download ${gmpArchive} http://ftp.gnu.org/gnu/gmp/${gmpArchive}
 download ${islArchive} http://isl.gforge.inria.fr/${islArchive}
 if [ "${enableWin32}" = "y" ] || [ "${enableWin64}" = "y" ]; then
@@ -810,10 +816,7 @@ extract() {
 		touch "${1}_extracted"
 	fi
 }
-extract ${binutilsArchive}
 extract ${expatArchive}
-extract ${gccArchive}
-extract ${gdbArchive}
 extract ${gmpArchive}
 extract ${islArchive}
 if [ "${enableWin32}" = "y" ] || [ "${enableWin64}" = "y" ]; then
@@ -849,7 +852,7 @@ buildIsl ${buildNative} "" "--build=${hostTriplet} --host=${hostTriplet}"
 
 buildExpat ${buildNative} "" "--build=${hostTriplet} --host=${hostTriplet}"
 
-buildBinutils ${buildNative} ${installNative} "" "--build=${hostTriplet} --host=${hostTriplet}" "${documentationTypes}"
+buildBinutils ${buildNative} ${installNative} "" "--build=${hostTriplet} --host=${hostTriplet} --with-python=yes" "${documentationTypes}"
 
 buildGcc ${buildNative} ${installNative} "" "--enable-languages=c --without-headers"
 
@@ -1019,23 +1022,6 @@ buildMingw() {
 		${bannerPrefix} \
 		"--build=${hostTriplet} --host=${triplet}"
 
-	buildBinutils \
-		${buildFolder} \
-		${installFolder} \
-		${bannerPrefix} \
-		"--build=${hostTriplet} --host=${triplet}" \
-		""
-
-	buildGcc \
-		${buildFolder} \
-		${installFolder} \
-		${bannerPrefix} \
-		"--build=${hostTriplet} --host=${triplet} \
-			--enable-languages=c,c++ \
-			--enable-checking=yes,extra \
-			--with-headers=yes \
-			--with-libiconv-prefix=${top}/${buildFolder}/${prerequisites}/${libiconv}"
-
 	cat > ${buildFolder}/python.sh <<- EOF
 	#!/bin/sh
 	shift
@@ -1056,6 +1042,26 @@ buildMingw() {
 	EOF
 	chmod +x ${buildFolder}/python.sh
 
+	buildBinutils \
+		${buildFolder} \
+		${installFolder} \
+		${bannerPrefix} \
+		"--build=${hostTriplet} --host=${triplet} \
+			--with-python=${top}/${buildFolder}/python.sh \
+			--with-libiconv-prefix=${top}/${buildFolder}/${prerequisites}/${libiconv}" \
+		""
+
+	buildGcc \
+		${buildFolder} \
+		${installFolder} \
+		${bannerPrefix} \
+		"--build=${hostTriplet} --host=${triplet} \
+			--enable-languages=c,c++ \
+			--enable-checking=yes,extra \
+			--with-headers=yes \
+			--with-libiconv-prefix=${top}/${buildFolder}/${prerequisites}/${libiconv}"
+
+if false; then
 	buildGdb \
 		${buildFolder} \
 		${installFolder} \
@@ -1078,7 +1084,7 @@ buildMingw() {
 			--with-python=no \
 			--with-libiconv-prefix=${top}/${buildFolder}/${prerequisites}/${libiconv}" \
 		""
-
+fi
 	postCleanup ${installFolder} ${bannerPrefix} ${triplet} "- ${libiconv}\n- python-${pythonVersion}\n"
 	rm -rf ${installFolder}/lib/gcc/${target}/${gccVersion}/plugin
 	rm -rf ${installFolder}/share/info ${installFolder}/share/man

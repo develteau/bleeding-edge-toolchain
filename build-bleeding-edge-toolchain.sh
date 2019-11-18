@@ -893,12 +893,15 @@ buildNewlib \
 
 buildGccFinal "-final" "-O2" "${installNative}" "${documentationTypes}"
 
+# skip native gdb
+if false; then
 buildGdb \
 	${buildNative} \
 	${installNative} \
 	"" \
 	"--build=${hostTriplet} --host=${hostTriplet} --with-python=yes" \
 	"${documentationTypes}"
+fi
 
 find ${installNative} -type f -exec chmod a+w {} +
 postCleanup ${installNative} "" ${hostSystem} ""

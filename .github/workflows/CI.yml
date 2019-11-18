@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+  schedule:
+    - cron: '0 12 * * *'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - run: mkdir build && cd build
+    - run: ../bleeding-edge-toolchain/build-bleeding-edge-toolchain.sh --skip-documentation --enable-win64
+      working-directory: build

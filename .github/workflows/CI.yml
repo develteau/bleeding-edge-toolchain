@@ -12,5 +12,8 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - run: |
+        sudo apt update
+        sudo apt install -y g++-9 g++-mingw-w64-x86-64 p7zip texinfo
+        sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 900 --slave /usr/bin/g++ g++ /usr/bin/g++-9
         mkdir build && cd build
         TERM=xterm-256color ../build-bleeding-edge-toolchain.sh --skip-documentation --enable-win64

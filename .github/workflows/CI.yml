@@ -11,6 +11,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - uses: Trass3r/setup-cpp@master
     - run: |
         sudo apt update
         sudo apt install -y g++-9 g++-mingw-w64-x86-64 p7zip texinfo

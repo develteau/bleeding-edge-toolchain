@@ -24,9 +24,9 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         name: native
-        path: installNative
+        path: build/installNative
 
     - uses: actions/upload-artifact@v1
       with:
         name: win64
-        path: installWin64
+        path: build/installWin64

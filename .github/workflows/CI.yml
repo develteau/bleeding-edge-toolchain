@@ -23,20 +23,42 @@ jobs:
         TERM=xterm-256color ../build-bleeding-edge-toolchain.sh --skip-documentation --enable-win64
 
     - run: echo "::set-env name=DATE::$(date '+%y%m%d')"
+    - uses: actions/upload-artifact@v1
+      with:
+        name: native
+        path: build/arm-none-eabi-gcc-${{ env.DATE }}.tar.xz
+
+    - uses: actions/upload-artifact@v1
+      with:
+        name: win64
+        path: build/installWin64/arm-none-eabi-gcc-${{ env.DATE }}-win64.7z
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: echo "::set-env name=DATE::$(date '+%y%m%d')"
+    - uses: actions/download-artifact@v1
+      with:
+        name: native
+    - uses: actions/download-artifact@v1
+      with:
+        name: win64
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # provided by Actions
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # provided by Actions but expires after 1h
       with:
-        tag_name: v$DATE
-        release_name: v$DATE
+        tag_name: v${{ env.DATE }}
+        release_name: v${{ env.DATE }}
     - uses: actions/upload-release-asset@v1.0.1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/arm-none-eabi-gcc-$DATE.tar.xz
+        asset_path: native/arm-none-eabi-gcc-$DATE.tar.xz
         asset_name: arm-none-eabi-gcc.tar.xz
         asset_content_type: application/x-xz
     - uses: actions/upload-release-asset@v1.0.1
@@ -44,6 +66,6 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build/installWin64/arm-none-eabi-gcc-$DATE-win64.7z
+        asset_path: win64/arm-none-eabi-gcc-$DATE-win64.7z
         asset_name: arm-none-eabi-gcc.7z
         asset_content_type: application/x-7z-compressed

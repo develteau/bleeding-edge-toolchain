@@ -792,6 +792,7 @@ download() {
 checkout() {
 	pushd .
 	git clone -q --depth=1 -b ${1} ${2} ${3} || (cd ${3} && git pull)
+	cd ${3} && git log -1
 	popd
 }
 

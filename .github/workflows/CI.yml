@@ -69,3 +69,24 @@ jobs:
         asset_path: win64/arm-none-eabi-gcc-$DATE-win64.7z
         asset_name: arm-none-eabi-gcc.7z
         asset_content_type: application/x-7z-compressed
+
+  testrelease:
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: touch test.txt
+    - id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # provided by Actions but expires after 1h
+      with:
+        tag_name: v${{ env.DATE }}
+        release_name: v${{ env.DATE }}
+    - uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: test.txt
+        asset_name: arm-none-eabi-gcc.tar.xz
+        asset_content_type: application/x-xz

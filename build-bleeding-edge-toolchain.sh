@@ -35,8 +35,8 @@ nanoLibraries="nanoLibraries"
 prerequisites="prerequisites"
 sources="sources"
 
-gcc="gcc"
-binutils="binutils-gdb"
+gcc="gcc-${gccVersion}"
+binutils="binutils-${binutilsVersion}"
 gdb="binutils-gdb"
 expat="expat-${expatVersion}"
 expatArchive="${expat}.tar.bz2"
@@ -791,14 +791,13 @@ download() {
 
 checkout() {
 	pushd .
-#	git clone -q --depth=1 -b ${1} ${2} || (cd ${3} && git fetch origin ${1} && git checkout ${1})
 	git clone -q --depth=1 -b ${1} ${2} || (cd ${3} && git pull)
 	popd
 }
 
 download ${expatArchive} https://github.com/libexpat/libexpat/releases/download/$(echo "R_${expatVersion}" | sed 's/\./_/g')/${expatArchive}
-checkout master https://github.com/gcc-mirror/gcc.git ${gcc}
-checkout master https://github.com/bminor/binutils-gdb.git ${binutils}
+checkout ${gccVersion} https://github.com/gcc-mirror/gcc.git ${gcc}
+checkout ${binutilsVersion} https://github.com/bminor/binutils-gdb.git ${binutils}
 download ${gmpArchive} http://ftp.gnu.org/gnu/gmp/${gmpArchive}
 download ${islArchive} http://isl.gforge.inria.fr/${islArchive}
 if [ "${enableWin32}" = "y" ] || [ "${enableWin64}" = "y" ]; then

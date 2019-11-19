@@ -374,6 +374,9 @@ buildBinutils() {
 		export CPPFLAGS="-I${top}/${buildFolder}/${prerequisites}/${zlib}/include ${BASE_CPPFLAGS-} -march=haswell ${CPPFLAGS-}"
 		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
 		echo "${bold}---------- ${bannerPrefix}${binutils} configure${normal}"
+		pushd "${top}/${sources}/${binutils}"
+		pkgversionBinutils=`git describe --all --long`
+		popd
 		eval "${top}/${sources}/${binutils}/configure \
 			${quietConfigureOptions} \
 			${configureOptions} \
@@ -395,7 +398,7 @@ buildBinutils() {
 			--with-mpfr=yes \
 			--with-libmpfr-prefix=${top}/${buildFolder}/${prerequisites}/${mpfr} \
 			\"--with-gdb-datadir='\\\${prefix}'/${target}/share/gdb\" \
-			\"--with-pkgversion=${pkgversion}\""
+			\"--with-pkgversion=${pkgversionBinutils}\""
 		echo "${bold}---------- ${bannerPrefix}${binutils} make${normal}"
 		make -j${nproc}
 		echo "${bold}---------- ${bannerPrefix}${binutils} make install${normal}"
@@ -431,6 +434,9 @@ buildGcc() {
 		export CPPFLAGS="-I${top}/${buildFolder}/${prerequisites}/${zlib}/include ${BASE_CPPFLAGS-} -march=haswell ${CPPFLAGS-}"
 		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
 		export LDFLAGS_FOR_BUILD="${BASE_LDFLAGS-} ${LDFLAGS_FOR_BUILD-}"
+		pushd "${top}/${sources}/${gcc}"
+		pkgversionGcc=`git describe --all --long`
+		popd
 		echo "${bold}---------- ${bannerPrefix}${gcc} configure${normal}"
 		eval "${top}/${sources}/${gcc}/configure \
 			${quietConfigureOptions} \
@@ -458,7 +464,7 @@ buildGcc() {
 			--with-mpfr=${top}/${buildFolder}/${prerequisites}/${mpfr} \
 			--with-mpc=${top}/${buildFolder}/${prerequisites}/${mpc} \
 			--with-isl=${top}/${buildFolder}/${prerequisites}/${isl} \
-			\"--with-pkgversion=${pkgversion}\" \
+			\"--with-pkgversion=${pkgversionGcc}\" \
 			--with-multilib-list=rmprofile"
 		echo "${bold}---------- ${bannerPrefix}${gcc} make all-gcc${normal}"
 		make -j${nproc} all-gcc
@@ -549,6 +555,9 @@ buildGccFinal() {
 		export LDFLAGS="-L${top}/${buildNative}/${prerequisites}/${zlib}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
 		export CFLAGS_FOR_TARGET="${optimization} ${BASE_CFLAGS_FOR_TARGET-} ${CFLAGS_FOR_TARGET-}"
 		export CXXFLAGS_FOR_TARGET="${optimization} ${BASE_CXXFLAGS_FOR_TARGET-} ${CXXFLAGS_FOR_TARGET-}"
+		pushd "${top}/${sources}/${gcc}"
+		pkgversionGcc=`git describe --all --long`
+		popd
 		echo "${bold}---------- ${gcc}${suffix} configure${normal}"
 		${top}/${sources}/${gcc}/configure \
 			${quietConfigureOptions} \
@@ -581,7 +590,7 @@ buildGccFinal() {
 			--with-mpfr=${top}/${buildNative}/${prerequisites}/${mpfr} \
 			--with-mpc=${top}/${buildNative}/${prerequisites}/${mpc} \
 			--with-isl=${top}/${buildNative}/${prerequisites}/${isl} \
-			"--with-pkgversion=${pkgversion}" \
+			"--with-pkgversion=${pkgversionGcc}" \
 			--with-multilib-list=rmprofile
 		echo "${bold}---------- ${gcc}${suffix} make${normal}"
 		make -j${nproc} INHIBIT_LIBC_CFLAGS="-DUSE_TM_CLONE_REGISTRY=0"

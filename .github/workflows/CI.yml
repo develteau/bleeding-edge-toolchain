@@ -20,7 +20,7 @@ jobs:
     - name: build
       run: |
         mkdir build && cd build
-        TERM=xterm ../build-bleeding-edge-toolchain.sh --skip-documentation --enable-win64
+        TERM=xterm-mono ../build-bleeding-edge-toolchain.sh --skip-documentation --enable-win64
 
     - run: echo "::set-env name=DATE::$(date '+%y%m%d')"
     - uses: actions/upload-artifact@v1

@@ -375,7 +375,9 @@ buildBinutils() {
 		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
 		echo "${bold}---------- ${bannerPrefix}${binutils} configure${normal}"
 		pushd "${top}/${sources}/${binutils}"
-		pkgversionBinutils=`git describe --all --long`
+		git log -1
+		git describe --all --long --always
+		pkgversionBinutils=`git describe --all --long --always`
 		popd
 		eval "${top}/${sources}/${binutils}/configure \
 			${quietConfigureOptions} \
@@ -435,7 +437,9 @@ buildGcc() {
 		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
 		export LDFLAGS_FOR_BUILD="${BASE_LDFLAGS-} ${LDFLAGS_FOR_BUILD-}"
 		pushd "${top}/${sources}/${gcc}"
-		pkgversionGcc=`git describe --all --long`
+		git log -1
+		git describe --all --long --always
+		pkgversionGcc=`git describe --all --long --always`
 		popd
 		echo "${bold}---------- ${bannerPrefix}${gcc} configure${normal}"
 		eval "${top}/${sources}/${gcc}/configure \
@@ -556,7 +560,9 @@ buildGccFinal() {
 		export CFLAGS_FOR_TARGET="${optimization} ${BASE_CFLAGS_FOR_TARGET-} ${CFLAGS_FOR_TARGET-}"
 		export CXXFLAGS_FOR_TARGET="${optimization} ${BASE_CXXFLAGS_FOR_TARGET-} ${CXXFLAGS_FOR_TARGET-}"
 		pushd "${top}/${sources}/${gcc}"
-		pkgversionGcc=`git describe --all --long`
+		git log -1
+		git describe --all --long --always
+		pkgversionGcc=`git describe --all --long --always`
 		popd
 		echo "${bold}---------- ${gcc}${suffix} configure${normal}"
 		${top}/${sources}/${gcc}/configure \

@@ -38,7 +38,6 @@ sources="sources"
 
 gcc="gcc-${gccVersion}"
 binutils="binutils-${binutilsVersion}"
-gdb="binutils-gdb"
 expat="expat-${expatVersion}"
 expatArchive="${expat}.tar.bz2"
 gmp="gmp-${gmpVersion}"
@@ -688,64 +687,6 @@ copyNanoLibraries() {
 	fi
 }
 
-buildGdb() {
-	(
-	local buildFolder="${1}"
-	local installFolder="${2}"
-	local bannerPrefix="${3}"
-	local configureOptions="${4}"
-	local documentations="${5}"
-	local tagFileBase="${top}/${buildFolder}/gdb-py"
-	if [[ $configureOptions == *"--with-python=no"* ]]; then
-		tagFileBase="${top}/${buildFolder}/gdb"
-	fi
-	echo "${bold}********** ${bannerPrefix}${gdb}${normal}"
-	if [ ! -f "${tagFileBase}_built" ]; then
-		if [ -d "${buildFolder}/${gdb}" ]; then
-			rm -rf "${buildFolder}/${gdb}"
-		fi
-		mkdir -p ${buildFolder}/${gdb}
-		cd ${buildFolder}/${gdb}
-		export CPPFLAGS="-I${top}/${buildFolder}/${prerequisites}/${zlib}/include -I${top}/${buildFolder}/${prerequisites}/${ncurses}/include ${BASE_CPPFLAGS-} -march=haswell ${CPPFLAGS-}"
-		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib -L${top}/${buildFolder}/${prerequisites}/${ncurses}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
-		echo "${bold}---------- ${bannerPrefix}${gdb} configure${normal}"
-		eval "${top}/${sources}/${gdb}/configure \
-			${quietConfigureOptions} \
-			${configureOptions} \
-			--target=${target} \
-			--prefix=${top}/${installFolder} \
-			--docdir=${top}/${installFolder}/share/doc \
-			--disable-nls \
-			--disable-sim \
-			--disable-werror \
-			--with-lzma=no \
-			--with-guile=no \
-			--with-system-gdbinit=${top}/${installFolder}/${target}/lib/gdbinit \
-			--with-system-zlib \
-			--with-expat=yes \
-			--with-libexpat-prefix=${top}/${buildFolder}/${prerequisites}/${expat} \
-			--with-mpfr=yes \
-			--with-libmpfr-prefix=${top}/${buildFolder}/${prerequisites}/${mpfr} \
-			\"--with-gdb-datadir='\\\${prefix}'/${target}/share/gdb\" \
-			\"--with-pkgversion=${pkgversion}\""
-		echo "${bold}---------- ${bannerPrefix}${gdb} make${normal}"
-		make -j${nproc}
-		echo "${bold}---------- ${bannerPrefix}${gdb} make install${normal}"
-		make install
-		for documentation in ${documentations}; do
-			echo "${bold}---------- ${bannerPrefix}${gdb} make install-${documentation}${normal}"
-			make install-${documentation}
-		done
-		touch "${tagFileBase}_built"
-		cd ${top}
-		if [ "${keepBuildFolders}" = "n" ]; then
-			echo "${bold}---------- ${bannerPrefix}${gdb} remove build folder${normal}"
-			rm -rf ${buildFolder}/${gdb}
-		fi
-	fi
-	)
-}
-
 postCleanup() {
 	local installFolder="${1}"
 	local bannerPrefix="${2}"
@@ -954,16 +895,6 @@ buildNewlib \
 
 buildGccFinal "-final" "-O2" "${installNative}" "${documentationTypes}"
 
-# skip native gdb
-if false; then
-buildGdb \
-	${buildNative} \
-	${installNative} \
-	"" \
-	"--build=${hostTriplet} --host=${hostTriplet} --with-python=yes" \
-	"${documentationTypes}"
-fi
-
 find ${installNative} -type f -exec chmod a+w {} +
 postCleanup ${installNative} "" ${hostSystem} ""
 if [[ "$(uname)" == "Darwin" ]]; then
@@ -1130,30 +1061,6 @@ buildMingw() {
 			--with-headers=yes \
 			--with-libiconv-prefix=${top}/${buildFolder}/${prerequisites}/${libiconv}"
 
-if false; then
-	buildGdb \
-		${buildFolder} \
-		${installFolder} \
-		${bannerPrefix} \
-		"--build=${hostTriplet} --host=${triplet} \
-			--with-python=${top}/${buildFolder}/python.sh \
-			--program-prefix=${target}- \
-			--program-suffix=-py \
-			--with-libiconv-prefix=${top}/${buildFolder}/${prerequisites}/${libiconv}" \
-		""
-	if [ "${keepBuildFolders}" = "y" ]; then
-		mv ${buildFolder}/${gdb} ${buildFolder}/${gdb}-py
-	fi
-
-	buildGdb \
-		${buildFolder} \
-		${installFolder} \
-		${bannerPrefix} \
-		"--build=${hostTriplet} --host=${triplet} \
-			--with-python=no \
-			--with-libiconv-prefix=${top}/${buildFolder}/${prerequisites}/${libiconv}" \
-		""
-fi
 	postCleanup ${installFolder} ${bannerPrefix} ${triplet} "- ${libiconv}\n- python-${pythonVersion}\n"
 	rm -rf ${installFolder}/lib/gcc/${target}/${gccVersion}/plugin
 	rm -rf ${installFolder}/share/info ${installFolder}/share/man

@@ -66,8 +66,8 @@ packageArchiveNative="${package}.tar.xz"
 packageArchiveWin32="${package}-win32.7z"
 packageArchiveWin64="${package}-win64.7z"
 
-bold="$(tput bold)"
-normal="$(tput sgr0)"
+bold="$(tput bold)" || true
+normal="$(tput sgr0)" || true
 
 if [[ "$(uname)" == "Darwin" ]]; then
 	nproc="$(sysctl -n hw.ncpu)"
@@ -797,8 +797,7 @@ download() {
 
 checkout() {
 	pushd .
-	git clone -q --depth=1 -b ${1} ${2} ${3} || (cd ${3} && git pull)
-	cd ${3} && git log -1
+	git clone --depth=1 -b ${1} ${2} ${3} || (cd ${3} && git pull)
 	popd
 }
 

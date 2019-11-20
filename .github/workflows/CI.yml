@@ -26,12 +26,12 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         name: native
-        path: build/arm-none-eabi-gcc-${{ env.DATE }}.tar.xz
+        path: build/arm-none-eabi-gcc-master-${{ env.DATE }}.tar.xz
 
     - uses: actions/upload-artifact@v1
       with:
         name: win64
-        path: build/installWin64/arm-none-eabi-gcc-${{ env.DATE }}-win64.7z
+        path: build/installWin64/arm-none-eabi-gcc-master-${{ env.DATE }}-win64.7z
 
   deploy:
     needs: build
@@ -58,7 +58,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: native/arm-none-eabi-gcc-$DATE.tar.xz
+        asset_path: native/arm-none-eabi-gcc-master-$DATE.tar.xz
         asset_name: arm-none-eabi-gcc.tar.xz
         asset_content_type: application/x-xz
     - uses: actions/upload-release-asset@v1.0.1
@@ -66,7 +66,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: win64/arm-none-eabi-gcc-$DATE-win64.7z
+        asset_path: win64/arm-none-eabi-gcc-master-$DATE-win64.7z
         asset_name: arm-none-eabi-gcc.7z
         asset_content_type: application/x-7z-compressed
 

@@ -412,8 +412,8 @@ buildBinutils() {
 		fi
 		mkdir -p ${buildFolder}/${binutils}
 		cd ${buildFolder}/${binutils}
-		export CPPFLAGS="-I${top}/${buildFolder}/${prerequisites}/${zlib}/include ${BASE_CPPFLAGS-} -march=haswell ${CPPFLAGS-}"
-		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
+		export CPPFLAGS="-I${top}/${buildFolder}/${prerequisites}/${zlib}/include -I${top}/${buildFolder}/${prerequisites}/${ncurses}/include ${BASE_CPPFLAGS-} -march=haswell ${CPPFLAGS-}"
+		export LDFLAGS="-L${top}/${buildFolder}/${prerequisites}/${zlib}/lib -L${top}/${buildFolder}/${prerequisites}/${ncurses}/lib ${BASE_LDFLAGS-} ${LDFLAGS-}"
 		echo "${bold}---------- ${bannerPrefix}${binutils} configure${normal}"
 		pushd "${top}/${sources}/${binutils}"
 		git log -1

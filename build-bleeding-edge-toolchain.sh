@@ -1019,7 +1019,7 @@ buildMingw() {
 	buildNcurses \
 		${buildFolder} \
 		${bannerPrefix} \
-		"--build=${hostTriplet} --host=${triplet}"
+		"--build=${hostTriplet} --host=${triplet} --enable-term-driver --enable-sp-funcs"
 
 	cat > ${buildFolder}/python.sh <<- EOF
 	#!/bin/sh

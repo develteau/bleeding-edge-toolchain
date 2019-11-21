@@ -5,4 +5,5 @@ RUN	apt update \
 
 WORKDIR /mnt/host
 
+ENV CPPFLAGS -flto
 ENTRYPOINT ["bash", "build-bleeding-edge-toolchain.sh", "--skip-documentation", "--enable-win64"]

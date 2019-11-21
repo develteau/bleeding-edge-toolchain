@@ -186,7 +186,7 @@ buildNcurses() {
 		fi
 		mkdir -p ${buildFolder}/${ncurses}
 		cd ${buildFolder}/${ncurses}
-		export CPPFLAGS="${BASE_CPPFLAGS-} ${CPPFLAGS-}"
+		export CPPFLAGS="${BASE_CPPFLAGS-} ${CPPFLAGS-} -fno-lto"
 		export LDFLAGS="${BASE_LDFLAGS-} ${LDFLAGS-}"
 		echo "${bold}---------- ${bannerPrefix}${ncurses} configure${normal}"
 		eval "${top}/${sources}/${ncurses}/configure \

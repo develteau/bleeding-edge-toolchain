@@ -20,12 +20,12 @@ jobs:
     - uses: actions/upload-artifact@v1
       with:
         name: native
-        path: build/arm-none-eabi-gcc-master-${{ env.DATE }}.tar.xz
+        path: arm-none-eabi-gcc-master-${{ env.DATE }}.tar.xz
 
     - uses: actions/upload-artifact@v1
       with:
         name: win64
-        path: build/installWin64/arm-none-eabi-gcc-master-${{ env.DATE }}-win64.7z
+        path: arm-none-eabi-gcc-master-${{ env.DATE }}-win64.7z
 
   deploy:
     needs: build

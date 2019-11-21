@@ -1074,7 +1074,7 @@ buildMingw() {
 	if [ ${buildPackages} = "y" ]; then
 	echo "${bold}********** ${bannerPrefix}Package${normal}"
 	rm -rf ${packageArchive}
-	(cd ${installFolder} && 7za a -l -mx=9 ${packageArchive} *)
+	7za a -l -mx=9 ${packageArchive} ${installFolder}/*
 	fi
 	)
 }

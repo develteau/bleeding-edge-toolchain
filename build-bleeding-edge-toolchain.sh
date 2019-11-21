@@ -712,7 +712,6 @@ postCleanup() {
 	- ${gcc}
 	- ${newlib}
 	- ${binutils}
-	- ${gdb}
 	$(echo -en "- ${expat}\n- ${gmp}\n- ${isl}\n- ${mpc}\n- ${mpfr}\n- ${zlib}\n${extraComponents}" | sort)
 
 	This package and info about it can be found on Freddie Chopin's website:

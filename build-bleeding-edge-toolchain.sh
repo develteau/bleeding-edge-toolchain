@@ -12,9 +12,10 @@
 set -e
 set -u
 
-gccVersion="master"
-binutilsVersion="master"
+binutilsVersion="2.32"
 expatVersion="2.2.7"
+gccVersion="9.2.0"
+gdbVersion="8.3"
 gmpVersion="6.1.2"
 islVersion="0.21"
 libiconvVersion="1.16"
